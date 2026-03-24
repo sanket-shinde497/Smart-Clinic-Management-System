@@ -8,6 +8,7 @@ import com.project.back_end.repo.DoctorRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -26,6 +27,15 @@ public class DoctorService {
 
     @Autowired
     private TokenService tokenService;
+
+    /**
+     * Delete all appointments for a doctor (service helper).
+     * Delegates to repository method deleteAllByDoctor_Id.
+     */
+    @Transactional
+    public void deleteAllByDoctorId(long doctorId) {
+        appointmentRepository.deleteAllByDoctor_Id(doctorId);
+    }
 
     /**
      * ✅ Get available slots for a doctor on a given date.
@@ -95,7 +105,8 @@ public class DoctorService {
     public int deleteDoctor(long id) {
         Optional<Doctor> existing = doctorRepository.findById(id);
         if (existing.isPresent()) {
-            appointmentRepository.deleteAllByDoctorId(id);
+            // use service helper that delegates to the corrected repository method
+            deleteAllByDoctorId(id);
             doctorRepository.deleteById(id);
             return 1;
         } else {
